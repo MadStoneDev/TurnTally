@@ -26,7 +26,7 @@ import {
   IconUsers,
   IconCheck,
 } from "@tabler/icons-react";
-import { Game, Player, Session, QuickStartData } from "@/types";
+import { Game, Player, Session } from "@/types";
 import {
   getGames,
   getPlayers,
@@ -92,7 +92,6 @@ export default function SessionSetupPage() {
   useEffect(() => {
     const gamesList = getGames();
     const playersList = getPlayers();
-    const quickStart = getQuickStartData();
     setGames(gamesList);
     setPlayers(playersList);
     setAvailablePlayers(playersList);

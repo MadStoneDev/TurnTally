@@ -238,7 +238,7 @@ export default function LeaderboardsPage() {
           Leaderboards
         </h1>
         <p className="text-neutral-600 mt-2">
-          "See who&apos;s dominating the board game scene"
+          See who&apos;s dominating the board game scene
         </p>
       </div>
 
