@@ -27,12 +27,7 @@ import {
   IconCheck,
 } from "@tabler/icons-react";
 import { Game, Player, Session } from "@/types";
-import {
-  getGames,
-  getPlayers,
-  setCurrentSession,
-  getQuickStartData,
-} from "@/utils/storage";
+import { getGames, getPlayers, setCurrentSession } from "@/utils/storage";
 import { v4 as uuidv4 } from "uuid";
 
 interface SortablePlayerProps {
