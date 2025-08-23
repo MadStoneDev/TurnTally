@@ -62,7 +62,116 @@
   * {
     @apply border-border;
   }
+  html {
+    scroll-behavior: smooth;
+  }
   body {
     @apply bg-background text-foreground;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@layer components {
+  /* Timer warning colors based on performance */
+  .timer-fast {
+    @apply bg-green-50 border-green-200 text-green-900;
+  }
+
+  .timer-normal {
+    @apply bg-white border-neutral-200 text-neutral-900;
+  }
+
+  .timer-slow {
+    @apply bg-yellow-50 border-yellow-200 text-yellow-900;
+  }
+
+  .timer-very-slow {
+    @apply bg-orange-50 border-orange-200 text-orange-900;
+  }
+
+  .timer-extremely-slow {
+    @apply bg-red-50 border-red-200 text-red-900;
+  }
+
+  /* Timer display pulse animation for warnings */
+  .timer-pulse {
+    animation: timerPulse 2s infinite;
+  }
+
+  @keyframes timerPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.3);
+}
+
+/* Focus styles */
+*:focus {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+
+*:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* Button transitions */
+button {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Animation for modals */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.modal-enter {
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* Drag and drop styles */
+.sortable-ghost {
+  opacity: 0.5;
+}
+
+.sortable-chosen {
+  transform: scale(1.02);
+}
+
+/* Timer styles */
+.timer-display {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.05em;
 }

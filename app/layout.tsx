@@ -1,7 +1,10 @@
+import "./globals.css";
+
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { ThemeProvider } from "next-themes";
-import "./globals.css";
+
+import Navigation from "@/components/navigation";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -33,7 +36,12 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <div className="min-h-screen bg-neutral-50">
+            <Navigation />
+            <main className="container mx-auto px-4 pb-20">
+              {children}
+            </main>
+          </div>
         </ThemeProvider>
       </body>
     </html>
