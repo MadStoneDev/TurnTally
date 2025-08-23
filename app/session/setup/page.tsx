@@ -24,8 +24,6 @@ import {
   IconDeviceGamepad2,
   IconUsers,
   IconCheck,
-  IconClock,
-  IconStar,
 } from "@tabler/icons-react";
 import { Game, Player, Session, QuickStartData } from "@/types";
 import {

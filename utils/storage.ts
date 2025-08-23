@@ -236,54 +236,5 @@ export const calculateTimerWarning = (
 
 // Initialize with dummy data
 export const initializeDummyData = (): void => {
-  const games = getGames();
-  const players = getPlayers();
-
-  if (games.length === 0) {
-    const dummyGames: Game[] = [
-      {
-        id: "1",
-        title: "Catan",
-        avatar: "🏝️",
-        description: "Build settlements and trade resources",
-      },
-      {
-        id: "2",
-        title: "Monopoly",
-        avatar: "🏠",
-        description: "Buy properties and collect rent",
-      },
-      {
-        id: "3",
-        title: "Scrabble",
-        avatar: "📝",
-        description: "Form words with letter tiles",
-      },
-    ];
-    saveGames(dummyGames);
-  }
-
-  if (players.length === 0) {
-    const dummyPlayers: Player[] = [
-      {
-        id: "1",
-        name: "Alice",
-        avatar: "👩",
-        games: [],
-      },
-      {
-        id: "2",
-        name: "Bob",
-        avatar: "👨",
-        games: [],
-      },
-      {
-        id: "3",
-        name: "Charlie",
-        avatar: "👤",
-        games: [],
-      },
-    ];
-    savePlayers(dummyPlayers);
-  }
+  // No longer creating dummy data - users start with empty collections
 };

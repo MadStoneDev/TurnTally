@@ -70,7 +70,7 @@ export default function StatsPage() {
         gamesPlayed: player.games.length,
       };
 
-      let allTurnTimes: number[] = [];
+      const allTurnTimes: number[] = [];
 
       player.games.forEach((gameStats) => {
         stats.totalSessions += gameStats.sessions.length;

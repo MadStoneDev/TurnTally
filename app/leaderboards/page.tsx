@@ -10,12 +10,11 @@ import {
   IconTarget,
   IconMedal,
 } from "@tabler/icons-react";
-import { Game, Player, LeaderboardEntry } from "@/types";
-import { getGames, getPlayers } from "@/utils/storage";
+import { Player, LeaderboardEntry } from "@/types";
+import { getPlayers } from "@/utils/storage";
 
 export default function LeaderboardsPage() {
   const [players, setPlayers] = useState<Player[]>([]);
-  const [games, setGames] = useState<Game[]>([]);
   const [selectedCategory, setSelectedCategory] =
     useState<string>("fastest-average");
   const [leaderboards, setLeaderboards] = useState<
@@ -24,9 +23,7 @@ export default function LeaderboardsPage() {
 
   useEffect(() => {
     const playersList = getPlayers();
-    const gamesList = getGames();
     setPlayers(playersList);
-    setGames(gamesList);
 
     calculateLeaderboards(playersList);
   }, []);
@@ -241,7 +238,7 @@ export default function LeaderboardsPage() {
           Leaderboards
         </h1>
         <p className="text-neutral-600 mt-2">
-          See who's dominating the board game scene
+          "See who&apos;s dominating the board game scene"
         </p>
       </div>
 

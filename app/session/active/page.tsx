@@ -12,7 +12,6 @@ import {
   IconRotate2,
   IconHome,
   IconNote,
-  IconPlus,
 } from "@tabler/icons-react";
 import {
   Game,
@@ -236,7 +235,7 @@ export default function ActiveSessionPage() {
   };
 
   const getTimerClasses = () => {
-    let baseClasses = "text-6xl font-mono font-bold mb-8 timer-display";
+    const baseClasses = "text-6xl font-mono font-bold mb-8 timer-display";
 
     switch (timerWarning.level) {
       case "fast":
@@ -255,7 +254,7 @@ export default function ActiveSessionPage() {
   };
 
   const getCurrentPlayerCardClasses = () => {
-    let baseClasses = "bg-white rounded-lg border-2 p-8 text-center mb-8";
+    const baseClasses = "bg-white rounded-lg border-2 p-8 text-center mb-8";
 
     switch (timerWarning.level) {
       case "fast":
@@ -318,7 +317,7 @@ export default function ActiveSessionPage() {
       };
 
       // Find or create game stats for this player
-      let existingGameStats = player.games.find((g) => g.gameId === gameId);
+      const existingGameStats = player.games.find((g) => g.gameId === gameId);
 
       if (existingGameStats) {
         existingGameStats.sessions.push(gameSession);
@@ -381,7 +380,7 @@ export default function ActiveSessionPage() {
         <div className="mb-6">
           <div className="text-6xl mb-4">{currentPlayer.avatar || "👤"}</div>
           <h2 className="text-2xl font-bold text-neutral-900 mb-2">
-            {currentPlayer.name}'s Turn
+            {currentPlayer.name}&apos;s Turn
           </h2>
           <div className="flex justify-center items-center space-x-2 text-neutral-600">
             <IconClock size={20} />
