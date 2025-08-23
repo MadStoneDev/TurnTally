@@ -1,11 +1,11 @@
 ﻿import { Game, Player, Session, QuickStartData } from "@/types";
 
 const STORAGE_KEYS = {
-  GAMES: "turntimer_games",
-  PLAYERS: "turntimer_players",
-  SESSIONS: "turntimer_sessions",
-  CURRENT_SESSION: "turntimer_current_session",
-  QUICK_START: "turntimer_quick_start",
+  GAMES: "turntally_games",
+  PLAYERS: "turntally_players",
+  SESSIONS: "turntally_sessions",
+  CURRENT_SESSION: "turntally_current_session",
+  QUICK_START: "turntally_quick_start",
 };
 
 // Game storage functions
