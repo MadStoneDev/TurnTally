@@ -9,6 +9,7 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  DragEndEvent,
 } from "@dnd-kit/core";
 import {
   arrayMove,
@@ -81,10 +82,6 @@ export default function SessionSetupPage() {
   const [selectedPlayers, setSelectedPlayers] = useState<Player[]>([]);
   const [availablePlayers, setAvailablePlayers] = useState<Player[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [quickStartData, setQuickStartData] = useState<QuickStartData>({
-    recentGames: [],
-    recentPlayerCombinations: [],
-  });
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -99,7 +96,6 @@ export default function SessionSetupPage() {
     setGames(gamesList);
     setPlayers(playersList);
     setAvailablePlayers(playersList);
-    setQuickStartData(quickStart);
   }, []);
 
   const handlePlayerToggle = (player: Player) => {
@@ -119,33 +115,10 @@ export default function SessionSetupPage() {
     }
   };
 
-  const handleQuickStartCombo = (playerIds: string[]) => {
-    const playersToSelect = playerIds
-      .map((id) => players.find((p) => p.id === id))
-      .filter(Boolean) as Player[];
-
-    if (playersToSelect.length > 0) {
-      setSelectedPlayers(playersToSelect);
-      setAvailablePlayers(players.filter((p) => !playerIds.includes(p.id)));
-    }
-  };
-
-  const formatLastPlayed = (timestamp: number) => {
-    const now = Date.now();
-    const diff = now - timestamp;
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-
-    if (days === 0) return "Today";
-    if (days === 1) return "Yesterday";
-    if (days < 7) return `${days} days ago`;
-    if (days < 30) return `${Math.floor(days / 7)} weeks ago`;
-    return `${Math.floor(days / 30)} months ago`;
-  };
-
-  const handleDragEnd = (event: any) => {
+  const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
-    if (active.id !== over.id) {
+    if (active.id !== over?.id && over) {
       const oldIndex = selectedPlayers.findIndex((p) => p.id === active.id);
       const newIndex = selectedPlayers.findIndex((p) => p.id === over.id);
       setSelectedPlayers(arrayMove(selectedPlayers, oldIndex, newIndex));

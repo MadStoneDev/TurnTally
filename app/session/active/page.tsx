@@ -362,7 +362,6 @@ export default function ActiveSessionPage() {
   }
 
   const currentPlayer = players[session.currentPlayerIndex];
-  const isRunning = session.isActive && !session.isPaused;
 
   return (
     <div className="py-8 max-w-2xl mx-auto">

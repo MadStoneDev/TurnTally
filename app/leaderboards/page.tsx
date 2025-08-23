@@ -248,7 +248,7 @@ export default function LeaderboardsPage() {
             <IconTrophy size={32} className="text-neutral-400" />
           </div>
           <h3 className="text-lg font-semibold text-neutral-900 mb-2">
-            No leaderboard data yet
+            &quot;No leaderboard data yet&quot;
           </h3>
           <p className="text-neutral-600">
             Play some games to see leaderboards
