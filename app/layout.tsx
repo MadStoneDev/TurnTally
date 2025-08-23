@@ -12,7 +12,7 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Turn Tally | Board Game Turn Tracker & Timer",
+  title: "TurnTally | Board Game Turn Tracker & Timer",
   description:
     "Professional board game timing app with player statistics, leaderboards, session notes, and turn-by-turn analysis. Perfect for game groups who want to track performance and improve gameplay.",
 };
