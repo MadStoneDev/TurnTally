@@ -10,12 +10,7 @@ import {
   IconTrendingUp,
   IconTrophy,
 } from "@tabler/icons-react";
-import {
-  getGames,
-  getPlayers,
-  getCurrentSession,
-  initializeDummyData,
-} from "@/utils/storage";
+import { getGames, getPlayers, getCurrentSession } from "@/utils/storage";
 import { Game, Player, Session } from "@/types";
 
 export default function Home() {
@@ -24,7 +19,6 @@ export default function Home() {
   const [currentSession, setCurrentSession] = useState<Session | null>(null);
 
   useEffect(() => {
-    initializeDummyData();
     setGames(getGames());
     setPlayers(getPlayers());
     setCurrentSession(getCurrentSession());

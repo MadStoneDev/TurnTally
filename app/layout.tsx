@@ -1,7 +1,7 @@
 import "./globals.css";
 
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Outfit } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 
 import Navigation from "@/components/navigation";
@@ -12,12 +12,13 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Next.js and Supabase Starter Kit",
-  description: "The fastest way to build apps with Next.js and Supabase",
+  title: "Turn Tally | Board Game Turn Tracker & Timer",
+  description:
+    "Professional board game timing app with player statistics, leaderboards, session notes, and turn-by-turn analysis. Perfect for game groups who want to track performance and improve gameplay.",
 };
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const outfit = Outfit({
+  variable: "--font-outfit",
   display: "swap",
   subsets: ["latin"],
 });
@@ -29,7 +30,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.className} antialiased`}>
+      <body className={`${outfit.className} antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -38,9 +39,7 @@ export default function RootLayout({
         >
           <div className="min-h-screen bg-neutral-50">
             <Navigation />
-            <main className="container mx-auto px-4 pb-20">
-              {children}
-            </main>
+            <main className="container mx-auto px-4 pb-20">{children}</main>
           </div>
         </ThemeProvider>
       </body>

@@ -233,8 +233,3 @@ export const calculateTimerWarning = (
 
   return { level: "normal", message: "", shouldPulse: false };
 };
-
-// Initialize with dummy data
-export const initializeDummyData = (): void => {
-  // No longer creating dummy data - users start with empty collections
-};
