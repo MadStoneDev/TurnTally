@@ -14,6 +14,8 @@ const playerAvatars = [
   "👤",
   "👨",
   "👩",
+  "🧔🏻‍♂️",
+  "‍👱🏻‍♀️️",
   "🧑",
   "👨‍💼",
   "👩‍💼",
@@ -25,6 +27,12 @@ const playerAvatars = [
   "👩‍🎨",
   "🧙‍♂️",
   "🧙‍♀️",
+    "🫅🏼",
+    "🫅🏻",
+  "👸🏼",
+  "🤴🏼",
+  "🤴🏻",
+  "👸🏻",
   "🤖",
 ];
 
@@ -101,7 +109,7 @@ export default function PlayerForm({
             <label className="block text-sm font-medium text-neutral-700 mb-2">
               Avatar
             </label>
-            <div className="grid grid-cols-8 gap-2">
+            <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2 max-h-[200px] overflow-y-auto">
               {playerAvatars.map((emoji) => (
                 <button
                   key={emoji}

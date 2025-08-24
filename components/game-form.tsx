@@ -12,20 +12,35 @@ interface GameFormProps {
 
 const gameEmojis = [
   "🎲",
-  "♠️",
-  "♥️",
-  "♣️",
-  "♦️",
+  "♟️",
+  "🎳 ",
+  "🧩 ",
   "🃏",
   "🎯",
-  "🏝️",
-  "🏠",
   "📝",
-  "🚗",
+    "🎮 ",
+    "🕹️",
+    "🦅 ",
+    "🦆 ",
+    "🦉 ",
+    "🐉 ",
+    "🗡️",
   "⚔️",
+    "🏹 ",
   "🧙‍♂️",
   "👑",
   "🛡️",
+    "🏰 ",
+  "🏠",
+    "🎪", 
+    "⚰️",
+    "💣 ",
+  "🚗",
+    "✈️",
+    "🚁 ",
+  "🚂 ",
+    "🚢 ",
+  "🏝️",
 ];
 
 export default function GameForm({ game, onSubmit, onClose }: GameFormProps) {
@@ -77,7 +92,7 @@ export default function GameForm({ game, onSubmit, onClose }: GameFormProps) {
             <label className="block text-sm font-medium text-neutral-700 mb-2">
               Avatar
             </label>
-            <div className="grid grid-cols-8 gap-2">
+            <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2  max-h-[200px] overflow-y-auto">
               {gameEmojis.map((emoji) => (
                 <button
                   key={emoji}
@@ -95,6 +110,21 @@ export default function GameForm({ game, onSubmit, onClose }: GameFormProps) {
             </div>
           </div>
 
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-2">
+              Title
+            </label>
+            <input
+                type="text"
+                value={formData.title}
+                onChange={(e) =>
+                    setFormData({ ...formData, title: e.target.value })
+                }
+                className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500"
+                placeholder="Game Title"
+            />
+          </div>
+          
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-2">
               Description
