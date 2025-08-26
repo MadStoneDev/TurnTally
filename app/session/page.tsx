@@ -7,7 +7,6 @@ import {
   IconPlus,
   IconClock,
   IconUsers,
-  IconDeviceGamepad2,
   IconCalendar,
   IconNote,
   IconEye,

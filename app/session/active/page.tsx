@@ -266,7 +266,7 @@ export default function ActiveSessionPage() {
     (saveTime = true) => {
       if (!session || !turnStartTime) return;
 
-      let newTurns = [...sessionTurns];
+      const newTurns = [...sessionTurns];
       if (saveTime) {
         // Save the current turn time
         newTurns[session.currentPlayerIndex].push(currentTime);
@@ -567,7 +567,7 @@ export default function ActiveSessionPage() {
                 </h2>
                 <p className="text-neutral-600">
                   Are you sure you want to end this game session? This will save
-                  all player statistics and you won't be able to continue
+                  all player statistics and you won&apost be able to continue
                   playing.
                 </p>
               </div>
