@@ -18,28 +18,30 @@ const gameEmojis = [
   "🃏",
   "🎯",
   "📝",
-    "🎮 ",
-    "🕹️",
-    "🦅 ",
-    "🦆 ",
-    "🦉 ",
-    "🐉 ",
-    "🗡️",
+  "🎮 ",
+  "🕹️",
+  "🧑‍🌾 ",
+  "🧟 ",
+  "🦅 ",
+  "🦆 ",
+  "🦉 ",
+  "🐉 ",
+  "🗡️",
   "⚔️",
-    "🏹 ",
+  "🏹 ",
   "🧙‍♂️",
   "👑",
   "🛡️",
-    "🏰 ",
+  "🏰 ",
   "🏠",
-    "🎪", 
-    "⚰️",
-    "💣 ",
+  "🎪",
+  "⚰️",
+  "💣 ",
   "🚗",
-    "✈️",
-    "🚁 ",
+  "✈️",
+  "🚁 ",
   "🚂 ",
-    "🚢 ",
+  "🚢 ",
   "🏝️",
 ];
 
@@ -74,7 +76,7 @@ export default function GameForm({ game, onSubmit, onClose }: GameFormProps) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md">
+      <div className="bg-white rounded-lg p-6 w-full max-w-lg">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-semibold text-neutral-900">
             {game ? "Edit Game" : "Add New Game"}
@@ -92,13 +94,13 @@ export default function GameForm({ game, onSubmit, onClose }: GameFormProps) {
             <label className="block text-sm font-medium text-neutral-700 mb-2">
               Avatar
             </label>
-            <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2  max-h-[200px] overflow-y-auto">
+            <div className="pr-3 grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2  max-h-[200px] overflow-y-auto">
               {gameEmojis.map((emoji) => (
                 <button
                   key={emoji}
                   type="button"
                   onClick={() => setFormData({ ...formData, avatar: emoji })}
-                  className={`text-2xl p-2 rounded-md border-2 transition-colors ${
+                  className={`p-2 grid place-content-center rounded-md border-2 text-2xl transition-all duration-300 ease-in-out ${
                     formData.avatar === emoji
                       ? "border-neutral-900 bg-neutral-100"
                       : "border-neutral-200 hover:border-neutral-300"
@@ -115,19 +117,19 @@ export default function GameForm({ game, onSubmit, onClose }: GameFormProps) {
               Title
             </label>
             <input
-                type="text"
-                value={formData.title}
-                onChange={(e) =>
-                    setFormData({ ...formData, title: e.target.value })
-                }
-                className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500"
-                placeholder="Game Title"
+              type="text"
+              value={formData.title}
+              onChange={(e) =>
+                setFormData({ ...formData, title: e.target.value })
+              }
+              className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500"
+              placeholder="Game Title"
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-2">
-              Description
+              Description (Optional)
             </label>
             <textarea
               value={formData.description}

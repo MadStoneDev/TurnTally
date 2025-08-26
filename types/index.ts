@@ -49,6 +49,7 @@ export interface Session {
   isPaused: boolean;
   currentTurnStartTime?: number;
   notes?: SessionNote[];
+  turns?: number[][];
 }
 
 export interface TimerState {

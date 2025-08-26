@@ -1,4 +1,5 @@
-﻿"use client";
+﻿// /session/active
+"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
@@ -12,7 +13,28 @@ import {
   IconRotate2,
   IconHome,
   IconNote,
+  IconSettings,
+  IconX,
+  IconCheck,
+  IconGripVertical,
 } from "@tabler/icons-react";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import {
   Game,
   Player,
@@ -34,6 +56,47 @@ import {
   calculateTimerWarning,
 } from "@/utils/storage";
 
+interface SortablePlayerProps {
+  player: Player;
+  isSelected: boolean;
+}
+
+function SortablePlayer({ player, isSelected }: SortablePlayerProps) {
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({ id: player.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      className={`flex items-center space-x-3 p-3 border rounded-lg bg-white ${
+        isSelected ? "border-neutral-900 bg-neutral-50" : "border-neutral-200"
+      }`}
+    >
+      <div {...listeners} className="cursor-grab active:cursor-grabbing">
+        <IconGripVertical size={18} className="text-neutral-400" />
+      </div>
+      <div className="text-xl">{player.avatar || "👤"}</div>
+      <div className="flex-1">
+        <div className="font-medium text-neutral-900 text-sm">
+          {player.name}
+        </div>
+      </div>
+      {isSelected && (
+        <div className="text-green-600">
+          <IconCheck size={18} />
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ActiveSessionPage() {
   const router = useRouter();
   const [session, setSession] = useState<Session | null>(null);
@@ -50,6 +113,18 @@ export default function ActiveSessionPage() {
   const [showNoteInput, setShowNoteInput] = useState(false);
   const [noteText, setNoteText] = useState("");
   const [sessionNotes, setSessionNotes] = useState<SessionNote[]>([]);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showEndGameConfirm, setShowEndGameConfirm] = useState(false);
+  const [allPlayers, setAllPlayers] = useState<Player[]>([]);
+  const [availablePlayers, setAvailablePlayers] = useState<Player[]>([]);
+  const [tempSelectedPlayers, setTempSelectedPlayers] = useState<Player[]>([]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
 
   // Initialize session data
   useEffect(() => {
@@ -74,10 +149,18 @@ export default function ActiveSessionPage() {
     setSession(currentSession);
     setGame(currentGame);
     setPlayers(sessionPlayers);
+    setAllPlayers(allPlayers);
     setSessionNotes(currentSession.notes || []);
+    setTempSelectedPlayers(sessionPlayers);
 
     // Initialize turns array for each player
-    setSessionTurns(sessionPlayers.map(() => []));
+    const savedTurns = currentSession.turns || sessionPlayers.map(() => []);
+    setSessionTurns(savedTurns);
+
+    // Set available players for settings
+    setAvailablePlayers(
+      allPlayers.filter((p) => !currentSession.playerIds.includes(p.id)),
+    );
   }, [router]);
 
   // Timer effect with warning calculation
@@ -115,6 +198,18 @@ export default function ActiveSessionPage() {
     session?.currentPlayerIndex,
   ]);
 
+  const updateSessionWithTurns = useCallback(
+    (updatedSession: Session, turns: number[][]) => {
+      const sessionWithTurns = {
+        ...updatedSession,
+        turns: turns,
+      };
+      setSession(sessionWithTurns);
+      setCurrentSession(sessionWithTurns);
+    },
+    [],
+  );
+
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -132,13 +227,13 @@ export default function ActiveSessionPage() {
       isActive: true,
       isPaused: false,
       currentTurnStartTime: now,
+      turns: sessionTurns,
     };
 
-    setSession(updatedSession);
-    setCurrentSession(updatedSession);
+    updateSessionWithTurns(updatedSession, sessionTurns);
     setTurnStartTime(now);
     setCurrentTime(0);
-  }, [session]);
+  }, [session, sessionTurns, updateSessionWithTurns]);
 
   const pauseTimer = useCallback(() => {
     if (!session) return;
@@ -146,11 +241,11 @@ export default function ActiveSessionPage() {
     const updatedSession: Session = {
       ...session,
       isPaused: true,
+      turns: sessionTurns,
     };
 
-    setSession(updatedSession);
-    setCurrentSession(updatedSession);
-  }, [session]);
+    updateSessionWithTurns(updatedSession, sessionTurns);
+  }, [session, sessionTurns, updateSessionWithTurns]);
 
   const resumeTimer = useCallback(() => {
     if (!session) return;
@@ -160,20 +255,20 @@ export default function ActiveSessionPage() {
       ...session,
       isPaused: false,
       currentTurnStartTime: now - currentTime * 1000,
+      turns: sessionTurns,
     };
 
-    setSession(updatedSession);
-    setCurrentSession(updatedSession);
+    updateSessionWithTurns(updatedSession, sessionTurns);
     setTurnStartTime(now - currentTime * 1000);
-  }, [session, currentTime]);
+  }, [session, currentTime, sessionTurns, updateSessionWithTurns]);
 
   const nextPlayer = useCallback(
     (saveTime = true) => {
       if (!session || !turnStartTime) return;
 
+      let newTurns = [...sessionTurns];
       if (saveTime) {
         // Save the current turn time
-        const newTurns = [...sessionTurns];
         newTurns[session.currentPlayerIndex].push(currentTime);
         setSessionTurns(newTurns);
       }
@@ -187,14 +282,14 @@ export default function ActiveSessionPage() {
         ...session,
         currentPlayerIndex: nextIndex,
         currentTurnStartTime: now,
+        turns: newTurns,
       };
 
-      setSession(updatedSession);
-      setCurrentSession(updatedSession);
+      updateSessionWithTurns(updatedSession, newTurns);
       setTurnStartTime(now);
       setCurrentTime(0);
     },
-    [session, sessionTurns, currentTime, turnStartTime],
+    [session, sessionTurns, currentTime, turnStartTime, updateSessionWithTurns],
   );
 
   const scrapAndNext = useCallback(() => {
@@ -218,12 +313,12 @@ export default function ActiveSessionPage() {
       const updatedSession = {
         ...session,
         notes: updatedNotes,
+        turns: sessionTurns,
       };
 
-      setSession(updatedSession);
-      setCurrentSession(updatedSession);
+      updateSessionWithTurns(updatedSession, sessionTurns);
     },
-    [session, sessionNotes],
+    [session, sessionNotes, sessionTurns, updateSessionWithTurns],
   );
 
   const handleAddNote = () => {
@@ -232,6 +327,79 @@ export default function ActiveSessionPage() {
       setNoteText("");
       setShowNoteInput(false);
     }
+  };
+
+  // Settings modal functions
+  const handlePlayerToggle = (player: Player) => {
+    if (tempSelectedPlayers.find((p) => p.id === player.id)) {
+      // Remove player
+      const newSelected = tempSelectedPlayers.filter((p) => p.id !== player.id);
+      setTempSelectedPlayers(newSelected);
+      setAvailablePlayers(
+        [...availablePlayers, player].sort((a, b) =>
+          a.name.localeCompare(b.name),
+        ),
+      );
+    } else {
+      // Add player
+      setTempSelectedPlayers([...tempSelectedPlayers, player]);
+      setAvailablePlayers(availablePlayers.filter((p) => p.id !== player.id));
+    }
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (active.id !== over?.id && over) {
+      const oldIndex = tempSelectedPlayers.findIndex((p) => p.id === active.id);
+      const newIndex = tempSelectedPlayers.findIndex((p) => p.id === over.id);
+      setTempSelectedPlayers(
+        arrayMove(tempSelectedPlayers, oldIndex, newIndex),
+      );
+    }
+  };
+
+  const applySettings = () => {
+    if (!session || tempSelectedPlayers.length < 2) return;
+
+    // Update session with new player configuration
+    const currentPlayerIds = players.map((p) => p.id);
+    const newPlayerIds = tempSelectedPlayers.map((p) => p.id);
+
+    const newTurns = tempSelectedPlayers.map((player) => {
+      const oldIndex = currentPlayerIds.findIndex((id) => id === player.id);
+      return oldIndex >= 0 ? sessionTurns[oldIndex] || [] : [];
+    });
+
+    const updatedSession: Session = {
+      ...session,
+      playerIds: newPlayerIds,
+      currentPlayerIndex: Math.min(
+        session.currentPlayerIndex,
+        newPlayerIds.length - 1,
+      ),
+      turns: newTurns,
+    };
+
+    setSession(updatedSession);
+    setCurrentSession(updatedSession);
+    setPlayers(tempSelectedPlayers);
+
+    // Initialize new turns array
+    setSessionTurns(newTurns);
+
+    setShowSettings(false);
+  };
+
+  const cancelSettings = () => {
+    // Reset temp selections
+    setTempSelectedPlayers(players);
+    setAvailablePlayers(
+      allPlayers.filter(
+        (p) => !players.map((player) => player.id).includes(p.id),
+      ),
+    );
+    setShowSettings(false);
   };
 
   const getTimerClasses = () => {
@@ -254,7 +422,8 @@ export default function ActiveSessionPage() {
   };
 
   const getCurrentPlayerCardClasses = () => {
-    const baseClasses = "bg-white rounded-lg border-2 p-8 text-center mb-8";
+    const baseClasses =
+      "bg-white rounded-lg border-2 p-4 sm:p-8 text-center mb-4 transition-all duration-300 ease-in-out";
 
     switch (timerWarning.level) {
       case "fast":
@@ -364,22 +533,200 @@ export default function ActiveSessionPage() {
   const currentPlayer = players[session.currentPlayerIndex];
 
   return (
-    <div className="py-8 max-w-2xl mx-auto">
+    <div className="py-4 max-w-2xl mx-auto">
       {/* Game Header */}
-      <div className="text-center mb-8">
-        <div className="flex justify-center items-center space-x-3 mb-4">
-          <div className="text-4xl">{game.avatar || "🎲"}</div>
+      <div className="text-center mb-4">
+        <div className="flex justify-center items-center space-x-3">
+          <div className="text-3xl">{game.avatar || "🎲"}</div>
           <h1 className="text-3xl font-bold text-neutral-900">{game.title}</h1>
+          <button
+            onClick={() => setShowSettings(true)}
+            className="ml-4 p-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-colors"
+            title="Session Settings"
+          >
+            <IconSettings size={20} />
+          </button>
         </div>
         <p className="text-neutral-600">Session in progress</p>
       </div>
 
+      {/* End Game Confirmation Modal */}
+      {showEndGameConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full">
+            <div className="p-6">
+              <div className="flex items-center justify-center mb-6">
+                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+                  <IconPlayerStop size={32} className="text-red-600" />
+                </div>
+              </div>
+
+              <div className="text-center mb-6">
+                <h2 className="text-xl font-bold text-neutral-900 mb-2">
+                  End Game Session?
+                </h2>
+                <p className="text-neutral-600">
+                  Are you sure you want to end this game session? This will save
+                  all player statistics and you won't be able to continue
+                  playing.
+                </p>
+              </div>
+
+              <div className="text-center text-sm text-neutral-500 mb-6">
+                <div>Game: {game?.title}</div>
+                <div>
+                  Duration:{" "}
+                  {formatTime(
+                    Math.floor((Date.now() - (session?.startTime || 0)) / 1000),
+                  )}
+                </div>
+                <div>Players: {players.map((p) => p.name).join(", ")}</div>
+              </div>
+
+              <div className="flex space-x-4">
+                <button
+                  onClick={() => setShowEndGameConfirm(false)}
+                  className="flex-1 px-4 py-3 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-colors font-medium"
+                >
+                  Continue Playing
+                </button>
+                <button
+                  onClick={() => {
+                    setShowEndGameConfirm(false);
+                    endGame();
+                  }}
+                  className="flex-1 px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+                >
+                  End Game
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Settings Modal */}
+      {showSettings && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-neutral-900">
+                  Session Settings
+                </h2>
+                <button
+                  onClick={cancelSettings}
+                  className="p-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-colors"
+                >
+                  <IconX size={24} />
+                </button>
+              </div>
+
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-neutral-900 mb-4">
+                  Update Players ({tempSelectedPlayers.length} selected)
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Available Players */}
+                  <div>
+                    <h4 className="text-md font-medium text-neutral-900 mb-3">
+                      Available Players
+                    </h4>
+                    <div className="space-y-2 max-h-60 overflow-y-auto">
+                      {availablePlayers.map((player) => (
+                        <button
+                          key={player.id}
+                          onClick={() => handlePlayerToggle(player)}
+                          className="w-full flex items-center space-x-2 p-2 border border-neutral-200 rounded-lg bg-white hover:bg-neutral-50 transition-colors text-sm"
+                        >
+                          <div className="text-lg">{player.avatar || "👤"}</div>
+                          <div className="flex-1 text-left">
+                            <div className="font-medium text-neutral-900 text-sm">
+                              {player.name}
+                            </div>
+                          </div>
+                          <div className="text-neutral-400">+</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Selected Players */}
+                  <div>
+                    <h4 className="text-md font-medium text-neutral-900 mb-3">
+                      Selected Players (drag to reorder)
+                    </h4>
+                    {tempSelectedPlayers.length === 0 ? (
+                      <div className="border-2 border-dashed border-neutral-200 rounded-lg p-4 text-center text-neutral-500 text-sm">
+                        No players selected
+                      </div>
+                    ) : (
+                      <DndContext
+                        sensors={sensors}
+                        collisionDetection={closestCenter}
+                        onDragEnd={handleDragEnd}
+                      >
+                        <SortableContext
+                          items={tempSelectedPlayers}
+                          strategy={verticalListSortingStrategy}
+                        >
+                          <div className="space-y-2 max-h-60 overflow-y-auto">
+                            {tempSelectedPlayers.map((player, index) => (
+                              <div key={player.id} className="relative">
+                                <div className="absolute -left-4 top-2 bg-neutral-900 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                                  {index + 1}
+                                </div>
+                                <SortablePlayer
+                                  player={player}
+                                  isSelected={true}
+                                />
+                                <button
+                                  onClick={() => handlePlayerToggle(player)}
+                                  className="absolute top-1 right-1 text-neutral-400 hover:text-red-600 transition-colors"
+                                >
+                                  ×
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </SortableContext>
+                      </DndContext>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end space-x-4">
+                <button
+                  onClick={cancelSettings}
+                  className="px-4 py-2 text-neutral-600 hover:text-neutral-900 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={applySettings}
+                  disabled={tempSelectedPlayers.length < 2}
+                  className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+                    tempSelectedPlayers.length >= 2
+                      ? "bg-neutral-900 text-white hover:bg-neutral-800"
+                      : "bg-neutral-300 text-neutral-500 cursor-not-allowed"
+                  }`}
+                >
+                  Apply Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Current Player & Timer */}
       <div className={getCurrentPlayerCardClasses()}>
-        <div className="mb-6">
-          <div className="text-6xl mb-4">{currentPlayer.avatar || "👤"}</div>
+        <div className="mb-4">
+          <div className="text-6xl mb-4"></div>
           <h2 className="text-2xl font-bold text-neutral-900 mb-2">
-            {currentPlayer.name}&apos;s Turn
+            {currentPlayer.avatar || "👤"} {currentPlayer.name}&apos;s Turn
           </h2>
           <div className="flex justify-center items-center space-x-2 text-neutral-600">
             <IconClock size={20} />
@@ -407,11 +754,21 @@ export default function ActiveSessionPage() {
               <span>Start</span>
             </button>
           ) : (
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {session.isActive && (
+                <button
+                  onClick={() => nextPlayer()}
+                  className="bg-blue-600 text-white px-4 py-6 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2"
+                >
+                  <IconPlayerSkipForward size={20} />
+                  <span>Next Player</span>
+                </button>
+              )}
+
               {session.isPaused ? (
                 <button
                   onClick={resumeTimer}
-                  className="bg-green-600 text-white px-4 py-3 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center space-x-2"
+                  className="bg-green-600 text-white px-4 py-6 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center space-x-2"
                 >
                   <IconPlayerPlay size={20} />
                   <span>Resume</span>
@@ -419,36 +776,20 @@ export default function ActiveSessionPage() {
               ) : (
                 <button
                   onClick={pauseTimer}
-                  className="bg-yellow-600 text-white px-4 py-3 rounded-lg hover:bg-yellow-700 transition-colors flex items-center justify-center space-x-2"
+                  className="bg-yellow-600 text-white px-4 py-6 rounded-lg hover:bg-yellow-700 transition-colors flex items-center justify-center space-x-2"
                 >
                   <IconPlayerPause size={20} />
                   <span>Pause</span>
                 </button>
               )}
-
-              <button
-                onClick={endGame}
-                className="bg-red-600 text-white px-4 py-3 rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center space-x-2"
-              >
-                <IconPlayerStop size={20} />
-                <span>End Game</span>
-              </button>
             </div>
           )}
 
           {session.isActive && (
-            <div className="grid grid-cols-2 gap-4 mt-4">
-              <button
-                onClick={() => nextPlayer()}
-                className="bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2"
-              >
-                <IconPlayerSkipForward size={20} />
-                <span>Next Player</span>
-              </button>
-
+            <div className="mt-4">
               <button
                 onClick={scrapAndNext}
-                className="bg-orange-600 text-white px-4 py-3 rounded-lg hover:bg-orange-700 transition-colors flex items-center justify-center space-x-2"
+                className="bg-orange-600 text-white px-4 py-3 rounded-lg hover:bg-orange-700 transition-colors flex items-center justify-center space-x-2 mx-auto"
               >
                 <IconRotate2 size={20} />
                 <span>Scrap & Next</span>
@@ -461,7 +802,7 @@ export default function ActiveSessionPage() {
             <div className="mt-4">
               <button
                 onClick={() => setShowNoteInput(!showNoteInput)}
-                className="bg-neutral-600 text-white px-4 py-2 rounded-lg hover:bg-neutral-700 transition-colors flex items-center justify-center space-x-2 mx-auto"
+                className="bg-neutral-600 text-white px-4 py-3 rounded-lg hover:bg-neutral-700 transition-colors flex items-center justify-center space-x-2 mx-auto"
               >
                 <IconNote size={18} />
                 <span>Add Note</span>
@@ -470,6 +811,14 @@ export default function ActiveSessionPage() {
           )}
         </div>
       </div>
+
+      <button
+        onClick={() => setShowEndGameConfirm(true)}
+        className={`mb-4 bg-red-600 text-white px-4 py-6 rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center space-x-2 w-full`}
+      >
+        <IconPlayerStop size={20} />
+        <span>End Game</span>
+      </button>
 
       {/* Note Input */}
       {showNoteInput && (

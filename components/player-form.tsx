@@ -12,11 +12,29 @@ interface PlayerFormProps {
 
 const playerAvatars = [
   "👤",
-  "👨",
-  "👩",
+  "👨🏼",
+  "🧔🏼‍♂️",
+  "👨🏼‍🦰",
   "🧔🏻‍♂️",
+  "👨🏽",
+  "🧔🏽‍♂️",
+  "👨🏾",
+  "🧔🏾‍♂️",
   "‍👱🏻‍♀️️",
-  "🧑",
+  "👩🏻‍🦰",
+  "👩🏻",
+  "👩🏽",
+  "👩🏽‍🦱",
+  "👩🏾",
+  "👩🏾‍🦰",
+  "👩🏻‍🦳",
+  "👩🏼‍🦳",
+  "👩🏽‍🦳",
+  "👩🏾‍🦳",
+  "👨🏻‍🦳",
+  "👨🏼‍🦳",
+  "👨🏽‍🦳",
+  "👨🏾‍🦳",
   "👨‍💼",
   "👩‍💼",
   "👨‍🎓",
@@ -25,14 +43,66 @@ const playerAvatars = [
   "👩‍💻",
   "👨‍🎨",
   "👩‍🎨",
-  "🧙‍♂️",
+  "👮‍♂️",
+  "👮‍♀️",
+  "👨‍🏫",
+  "👩‍🏫",
+  "👨‍🌾",
+  "👩‍🌾",
+  "👨‍🍳",
+  "👩‍🍳",
+  "👨‍🔧",
+  "👩‍🔧",
+  "👨‍🚀",
+  "👩‍🚀",
+  "👨‍🚒",
+  "👩‍🚒",
+  "🤵‍♂️",
+  "👰‍♀️",
   "🧙‍♀️",
-    "🫅🏼",
-    "🫅🏻",
-  "👸🏼",
-  "🤴🏼",
-  "🤴🏻",
-  "👸🏻",
+  "🧙‍♂️",
+  "🧝‍♂️",
+  "🧝‍♀️",
+  "🤴",
+  "👸",
+  "🦸‍♂️",
+  "🦸‍♀️",
+  "🧛‍♂️",
+  "🧛‍♀️",
+  "👑",
+  "🤠",
+  "👻",
+  "👽",
+  "🐶",
+  "🐺",
+  "🐱",
+  "🐦‍⬛",
+  "🐮",
+  "🐞",
+  "🐯",
+  "🦁",
+  "🦝",
+  "🐭",
+  "🐰",
+  "🐻",
+  "🐨",
+  "🐼",
+  "🐸",
+  "🐴",
+  "🫎",
+  "🦒",
+  "🦍",
+  "🦥",
+  "🦘",
+  "🐊",
+  "🦈",
+  "🐬",
+  "🦐",
+  "🐦‍🔥",
+  "🦄",
+  "🐲",
+  "🧜‍♂️",
+  "🧜‍♀️",
   "🤖",
 ];
 
@@ -71,7 +141,7 @@ export default function PlayerForm({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md">
+      <div className="bg-white rounded-lg p-6 w-full max-w-lg">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-semibold text-neutral-900">
             {player ? "Edit Player" : "Add New Player"}
@@ -109,13 +179,13 @@ export default function PlayerForm({
             <label className="block text-sm font-medium text-neutral-700 mb-2">
               Avatar
             </label>
-            <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2 max-h-[200px] overflow-y-auto">
+            <div className="pr-3 grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2 max-h-[200px] overflow-y-auto">
               {playerAvatars.map((emoji) => (
                 <button
                   key={emoji}
                   type="button"
                   onClick={() => setFormData({ ...formData, avatar: emoji })}
-                  className={`text-2xl p-2 rounded-md border-2 transition-colors ${
+                  className={`grid place-content-center text-2xl p-2 rounded-md border-2 transition-colors ${
                     formData.avatar === emoji
                       ? "border-neutral-900 bg-neutral-100"
                       : "border-neutral-200 hover:border-neutral-300"

@@ -1,4 +1,5 @@
-﻿"use client";
+﻿// /session/setup
+"use client";
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -238,7 +239,7 @@ export default function SessionSetupPage() {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
               {/* Available Players */}
               <div>
                 <h3 className="text-lg font-medium text-neutral-900 mb-3">
