@@ -26,10 +26,12 @@ import {
   IconDeviceGamepad2,
   IconUsers,
   IconCheck,
+  IconPlus, IconTrash,
 } from "@tabler/icons-react";
 import { Game, Player, Session } from "@/types";
 import { getGames, getPlayers, setCurrentSession } from "@/utils/storage";
 import { v4 as uuidv4 } from "uuid";
+import { getGameDisplayImage } from "@/lib/helpers";
 
 interface SortablePlayerProps {
   player: Player;
@@ -187,14 +189,25 @@ export default function SessionSetupPage() {
                 <button
                   key={game.id}
                   onClick={() => setSelectedGame(game)}
-                  className={`p-4 border rounded-lg text-left transition-all ${
+                  className={`p-4 relative border rounded-lg text-left transition-all ${
                     selectedGame?.id === game.id
                       ? "border-neutral-900 bg-neutral-100"
                       : "border-neutral-200 bg-white hover:border-neutral-300 hover:bg-neutral-50"
                   }`}
                 >
                   <div className="flex items-center space-x-3">
-                    <div className="text-2xl">{game.avatar || "🎲"}</div>
+                    {(() => {
+                      const displayImage = getGameDisplayImage(game);
+                      return displayImage.type === "thumbnail" ? (
+                        <img
+                          src={displayImage.value}
+                          alt={game.title}
+                          className="w-10 h-10 object-cover rounded"
+                        />
+                      ) : (
+                        <div className="text-2xl">{displayImage.value}</div>
+                      );
+                    })()}
                     <div>
                       <div className="font-medium text-neutral-900">
                         {game.title}
@@ -207,7 +220,7 @@ export default function SessionSetupPage() {
                     </div>
                   </div>
                   {selectedGame?.id === game.id && (
-                    <div className="mt-2 text-green-600 flex justify-end">
+                    <div className="absolute top-1/2 -translate-y-1/2 right-4 text-green-600 flex justify-end">
                       <IconCheck size={20} />
                     </div>
                   )}
@@ -250,7 +263,7 @@ export default function SessionSetupPage() {
                     <button
                       key={player.id}
                       onClick={() => handlePlayerToggle(player)}
-                      className="w-full flex items-center space-x-3 p-3 border border-neutral-200 rounded-lg bg-white hover:bg-neutral-50 transition-colors"
+                      className="group relative w-full flex items-center space-x-3 p-3 border border-neutral-200 rounded-lg bg-white hover:bg-neutral-50 transition-colors"
                     >
                       <div className="text-2xl">{player.avatar || "👤"}</div>
                       <div className="flex-1 text-left">
@@ -258,7 +271,9 @@ export default function SessionSetupPage() {
                           {player.name}
                         </div>
                       </div>
-                      <div className="text-neutral-400">+</div>
+                      <div className="group-hover:rotate-180 text-neutral-400 group-hover:text-green-600 transition-all duration-300 ease-in-out">
+                        <IconPlus size={20} />
+                      </div>
                     </button>
                   ))}
                 </div>
@@ -285,16 +300,16 @@ export default function SessionSetupPage() {
                     >
                       <div className="space-y-2">
                         {selectedPlayers.map((player, index) => (
-                          <div key={player.id} className="relative">
-                            <div className="absolute -left-6 top-4 bg-neutral-900 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                          <div key={player.id} className="group ml-8 relative">
+                            <div className="absolute -left-8 top-1/2 -translate-y-1/2 bg-neutral-900 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                               {index + 1}
                             </div>
                             <SortablePlayer player={player} isSelected={true} />
                             <button
                               onClick={() => handlePlayerToggle(player)}
-                              className="absolute top-2 right-2 text-neutral-400 hover:text-red-600 transition-colors"
+                              className="absolute top-1/2 -translate-y-1/2 right-4 group-hover:right-10 opacity-0 group-hover:opacity-100 text-neutral-400 hover:text-red-600 transition-all duration-300 ease-in-out"
                             >
-                              ×
+                              <IconTrash size={20} />
                             </button>
                           </div>
                         ))}

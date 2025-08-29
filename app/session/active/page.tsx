@@ -55,6 +55,7 @@ import {
   updateQuickStartData,
   calculateTimerWarning,
 } from "@/utils/storage";
+import {getGameDisplayImage} from "@/lib/helpers";
 
 interface SortablePlayerProps {
   player: Player;
@@ -537,7 +538,14 @@ export default function ActiveSessionPage() {
       {/* Game Header */}
       <div className="text-center mb-4">
         <div className="flex justify-center items-center space-x-3">
-          <div className="text-3xl">{game.avatar || "🎲"}</div>
+          {(() => {
+            const displayImage = getGameDisplayImage(game);
+            return displayImage.type === 'thumbnail' ? (
+                <img src={displayImage.value} alt={game.title} className="w-12 h-12 object-cover rounded" />
+            ) : (
+                <div className="text-3xl">{displayImage.value}</div>
+            );
+          })()}
           <h1 className="text-3xl font-bold text-neutral-900">{game.title}</h1>
           <button
             onClick={() => setShowSettings(true)}

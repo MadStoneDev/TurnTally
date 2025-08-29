@@ -2,6 +2,7 @@
   id: string;
   title: string;
   avatar?: string;
+  thumbnail?: string;
   description?: string;
 }
 

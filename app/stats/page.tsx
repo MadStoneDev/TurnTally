@@ -10,6 +10,7 @@ import {
 } from "@tabler/icons-react";
 import { Game, Player, Session } from "@/types";
 import { getGames, getPlayers, getSessions } from "@/utils/storage";
+import {getGameDisplayImage} from "@/lib/helpers";
 
 interface PlayerStats {
   id: string;
@@ -324,7 +325,14 @@ export default function StatsPage() {
                         <div className="w-6 h-6 bg-neutral-100 rounded-full flex items-center justify-center text-xs font-medium">
                           {index + 1}
                         </div>
-                        <div className="text-2xl">{game.avatar || "🎲"}</div>
+                        {(() => {
+                          const displayImage = getGameDisplayImage(game);
+                          return displayImage.type === 'thumbnail' ? (
+                              <img src={displayImage.value} alt={game.title} className="w-10 h-10 object-cover rounded" />
+                          ) : (
+                              <div className="text-2xl">{displayImage.value}</div>
+                          );
+                        })()}
                         <div className="flex-1">
                           <div className="font-medium text-neutral-900">
                             {game.title}
@@ -489,7 +497,14 @@ export default function StatsPage() {
                     className="bg-white rounded-lg p-6 border border-neutral-200"
                   >
                     <div className="flex items-start space-x-4 mb-4">
-                      <div className="text-4xl">{game.avatar || "🎲"}</div>
+                      {(() => {
+                        const displayImage = getGameDisplayImage(game);
+                        return displayImage.type === 'thumbnail' ? (
+                            <img src={displayImage.value} alt={game.title} className="w-14 h-14 object-cover rounded" />
+                        ) : (
+                            <div className="text-4xl">{displayImage.value}</div>
+                        );
+                      })()}
                       <div className="flex-1">
                         <h3 className="text-xl font-semibold text-neutral-900">
                           {game.title}

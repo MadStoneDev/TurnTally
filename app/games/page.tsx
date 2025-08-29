@@ -12,6 +12,7 @@ import { getGames, addGame, updateGame, deleteGame } from '@/utils/storage';
 import { v4 as uuidv4 } from 'uuid';
 import GameForm from '@/components/game-form';
 import ConfirmDialog from '@/components/confirm-dialog';
+import {getGameDisplayImage} from "@/lib/helpers";
 
 export default function GamesPage() {
     const [games, setGames] = useState<Game[]>([]);
@@ -90,11 +91,16 @@ export default function GamesPage() {
                             key={game.id}
                             className="bg-white rounded-lg border border-neutral-200 p-6 hover:shadow-md transition-shadow"
                         >
-                            <div className="flex items-start justify-between mb-4">
+                            <div className="flex items-center justify-between">
                                 <div className="flex items-center space-x-3">
-                                    <div className="text-2xl">
-                                        {game.avatar || '🎲'}
-                                    </div>
+                                    {(() => {
+                                        const displayImage = getGameDisplayImage(game);
+                                        return displayImage.type === 'thumbnail' ? (
+                                            <img src={displayImage.value} alt={game.title} className="w-10 h-10 object-cover rounded" />
+                                        ) : (
+                                            <div className="text-2xl">{displayImage.value}</div>
+                                        );
+                                    })()}
                                     <div>
                                         <h3 className="font-semibold text-neutral-900">
                                             {game.title}
@@ -106,13 +112,13 @@ export default function GamesPage() {
                                         onClick={() => setEditingGame(game)}
                                         className="text-neutral-400 hover:text-neutral-600 transition-colors"
                                     >
-                                        <IconEdit size={18} />
+                                        <IconEdit size={20} />
                                     </button>
                                     <button
                                         onClick={() => setDeletingGame(game)}
                                         className="text-neutral-400 hover:text-red-600 transition-colors"
                                     >
-                                        <IconTrash size={18} />
+                                        <IconTrash size={20} />
                                     </button>
                                 </div>
                             </div>
