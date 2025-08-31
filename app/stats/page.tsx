@@ -271,7 +271,7 @@ export default function StatsPage() {
                     }`}
                 >
                   <Icon size={18} />
-                  <span>{tab.label}</span>
+                  <span className={`hidden sm:block`}>{tab.label}</span>
                 </button>
             );
           })}
