@@ -228,19 +228,6 @@ export default function GamesPage() {
         }
     };
 
-    const getSortLabel = () => {
-        switch (sortOption) {
-            case 'alphabetical':
-                return 'Alphabetical';
-            case 'order':
-                return 'Order Added';
-            case 'free':
-                return 'Custom Order';
-            default:
-                return 'Sort';
-        }
-    };
-
     return (
         <div className="py-8 max-w-4xl mx-auto">
             <div className="flex justify-between items-center mb-8">
