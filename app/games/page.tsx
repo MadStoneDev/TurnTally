@@ -230,7 +230,7 @@ export default function GamesPage() {
 
     return (
         <div className="py-8 max-w-4xl mx-auto">
-            <div className="flex justify-between items-center mb-8">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-8">
                 <div>
                     <h1 className="text-3xl font-bold text-neutral-900">Games</h1>
                     <p className="text-neutral-600 mt-2">
