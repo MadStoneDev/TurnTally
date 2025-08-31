@@ -53,13 +53,6 @@ export interface Session {
   turns?: number[][];
 }
 
-export interface TimerState {
-  isRunning: boolean;
-  isPaused: boolean;
-  startTime?: number;
-  currentTime: number;
-}
-
 export interface QuickStartData {
   recentGames: {
     gameId: string;
