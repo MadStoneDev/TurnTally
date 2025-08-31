@@ -224,6 +224,11 @@ export default function StatsPage() {
     return `${hours}h ${remainingMins}m`;
   };
 
+  const getMinTime = (values: number[]): string => {
+    const validValues = values.filter(v => v > 0);
+    return validValues.length > 0 ? formatTime(Math.min(...validValues)) : "0s";
+  };
+
   const formatDate = (timestamp: number): string => {
     return new Date(timestamp).toLocaleDateString();
   };
@@ -427,13 +432,7 @@ export default function StatsPage() {
                         <div>
                           <div className="text-sm text-neutral-600">Fastest Turn</div>
                           <div className="text-lg font-semibold text-green-600">
-                            {formatTime(
-                                Math.min(
-                                    ...playerStats
-                                        .filter((p) => p.fastestTurn > 0)
-                                        .map((p) => p.fastestTurn),
-                                ),
-                            )}
+                            {getMinTime(playerStats.map(p => p.fastestTurn))}
                           </div>
                         </div>
                         <div>
@@ -441,13 +440,7 @@ export default function StatsPage() {
                             Fastest Average
                           </div>
                           <div className="text-lg font-semibold text-blue-600">
-                            {formatTime(
-                                Math.min(
-                                    ...playerStats
-                                        .filter((p) => p.avgTurnTime > 0)
-                                        .map((p) => p.avgTurnTime),
-                                ),
-                            )}
+                            {getMinTime(playerStats.map(p => p.avgTurnTime))}
                           </div>
                         </div>
                         <div>
