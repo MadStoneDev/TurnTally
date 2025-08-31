@@ -29,6 +29,7 @@ interface GameStats {
   id: string;
   title: string;
   avatar?: string;
+  thumbnail?: string;
   sessionsCount: number;
   totalPlayers: Set<string>;
   avgSessionLength: number;
@@ -108,6 +109,7 @@ export default function StatsPage() {
         id: game.id,
         title: game.title,
         avatar: game.avatar,
+        thumbnail: game.thumbnail,
         sessionsCount: 0,
         totalPlayers: new Set<string>(),
         avgSessionLength: 0,
