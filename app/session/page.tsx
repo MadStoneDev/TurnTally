@@ -188,7 +188,7 @@ export default function SessionPage() {
                 <div className="mt-4 flex flex-col space-y-2">
                   <span className="text-sm text-neutral-600">Players:</span>
                   <div className="flex flex-wrap gap-3">
-                    {getPlayersForSession(currentSession).map((player, index) => (
+                    {getPlayersForSession(currentSession).map((player) => (
                         <div key={player.id} className="flex items-center space-x-2">
                           <div className="text-lg">{player.avatar || "👤"}</div>
                           <span className="text-sm text-neutral-700">
