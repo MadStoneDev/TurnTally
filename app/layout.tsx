@@ -37,7 +37,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <div className="min-h-screen bg-neutral-50">
+          <div className="relative min-h-screen bg-neutral-50">
             <Navigation />
             <main className="container mx-auto px-4 pb-20">{children}</main>
           </div>
