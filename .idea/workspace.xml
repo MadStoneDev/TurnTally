@@ -7,11 +7,8 @@
     <list default="true" id="84fd6d3e-aec8-4662-bf0f-003ab527fdc7" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/games/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/games/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/session/active/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/session/active/page.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/session/setup/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/session/setup/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/stats/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/stats/page.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/game-form.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/game-form.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/types/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/types/index.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -79,6 +76,7 @@
       <option name="presentableId" value="Default" />
       <updated>1756014458518</updated>
       <workItem from="1756014473806" duration="1339000" />
+      <workItem from="1756614162021" duration="3183000" />
     </task>
     <servers />
   </component>

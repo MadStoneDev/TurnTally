@@ -10,7 +10,7 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  DragEndEvent,
+  DragEndEvent, TouchSensor,
 } from "@dnd-kit/core";
 import {
   arrayMove,
@@ -80,11 +80,20 @@ export default function SessionSetupPage() {
   const [selectedPlayers, setSelectedPlayers] = useState<Player[]>([]);
   const [availablePlayers, setAvailablePlayers] = useState<Player[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
   const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    }),
+      useSensor(PointerSensor, {
+        activationConstraint: { distance: 8 }
+      }),
+      useSensor(TouchSensor, {
+        activationConstraint: {
+          delay: 200,
+          tolerance: 5
+        }
+      }),
+      useSensor(KeyboardSensor, {
+        coordinateGetter: sortableKeyboardCoordinates,
+      })
   );
 
   useEffect(() => {

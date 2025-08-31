@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { IconX, IconSearch, IconLoader } from "@tabler/icons-react";
+import { IconX, IconSearch, IconLoader, IconCheck, IconChevronDown } from "@tabler/icons-react";
 import { Game } from "@/types";
 
 interface GameFormProps {
@@ -62,22 +62,37 @@ export default function GameForm({ game, onSubmit, onClose }: GameFormProps) {
 
   const [activeTab, setActiveTab] = useState<'search' | 'emoji'>('search');
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<BGGSearchResult[]>([]);
+  const [allSearchResults, setAllSearchResults] = useState<BGGSearchResult[]>([]);
+  const [displayedResults, setDisplayedResults] = useState<BGGSearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [resultsOffset, setResultsOffset] = useState(0);
+  const [selectedGame, setSelectedGame] = useState<BGGSearchResult | null>(null);
+  const [showResults, setShowResults] = useState(true);
+  const [hasMoreResults, setHasMoreResults] = useState(false);
+
+  const RESULTS_PER_PAGE = 10;
 
   // Debounced search function
   const debouncedSearch = useCallback(async (query: string) => {
     if (query.length < 3) {
-      setSearchResults([]);
+      setAllSearchResults([]);
+      setDisplayedResults([]);
+      setSelectedGame(null);
+      setShowResults(true);
+      setResultsOffset(0);
       return;
     }
 
     setIsSearching(true);
+    setShowResults(true);
     try {
+      // Use CORS proxy to access BGG API
+      const proxyUrl = 'https://api.allorigins.win/raw?url=';
+
       // Search BGG API
       const searchResponse = await fetch(
-          `https://boardgamegeek.com/xmlapi2/search?query=${encodeURIComponent(query)}&type=boardgame`
+          `${proxyUrl}${encodeURIComponent(`https://boardgamegeek.com/xmlapi2/search?query=${encodeURIComponent(query)}&type=boardgame`)}`
       );
       const searchXml = await searchResponse.text();
 
@@ -86,38 +101,64 @@ export default function GameForm({ game, onSubmit, onClose }: GameFormProps) {
       const xmlDoc = parser.parseFromString(searchXml, "text/xml");
       const items = Array.from(xmlDoc.querySelectorAll("item"));
 
-      const gameIds = items.slice(0, 10).map(item => item.getAttribute("id")).filter(Boolean);
+      // Get more results to enable pagination - reduced to avoid URL length issues
+      const gameIds = items.slice(0, 30).map(item => item.getAttribute("id")).filter(Boolean);
 
       if (gameIds.length === 0) {
-        setSearchResults([]);
+        setAllSearchResults([]);
+        setDisplayedResults([]);
+        setHasMoreResults(false);
         setIsSearching(false);
         return;
       }
 
-      // Get detailed info including thumbnails
-      const thingResponse = await fetch(
-          `https://boardgamegeek.com/xmlapi2/thing?id=${gameIds.join(",")}&type=boardgame`
-      );
-      const thingXml = await thingResponse.text();
-      const thingDoc = parser.parseFromString(thingXml, "text/xml");
-      const thingItems = Array.from(thingDoc.querySelectorAll("item"));
+      // Split into smaller batches to avoid URL length limits
+      const batchSize = 15;
+      const batches = [];
+      for (let i = 0; i < gameIds.length; i += batchSize) {
+        batches.push(gameIds.slice(i, i + batchSize));
+      }
 
-      const results: BGGSearchResult[] = thingItems.map(item => {
-        const id = item.getAttribute("id") || "";
-        const nameElement = item.querySelector('name[type="primary"]');
-        const name = nameElement?.getAttribute("value") || "";
-        const thumbnailElement = item.querySelector("thumbnail");
-        const thumbnail = thumbnailElement?.textContent || undefined;
-        const yearElement = item.querySelector("yearpublished");
-        const yearPublished = yearElement?.getAttribute("value") || undefined;
+      let allResults: BGGSearchResult[] = [];
 
-        return { id, name, thumbnail, yearPublished };
-      }).filter(result => result.name);
+      // Fetch each batch
+      for (const batch of batches) {
+        try {
+          const thingResponse = await fetch(
+              `${proxyUrl}${encodeURIComponent(`https://boardgamegeek.com/xmlapi2/thing?id=${batch.join(",")}&type=boardgame`)}`
+          );
+          const thingXml = await thingResponse.text();
+          const thingDoc = parser.parseFromString(thingXml, "text/xml");
+          const thingItems = Array.from(thingDoc.querySelectorAll("item"));
 
-      setSearchResults(results);
+          const batchResults: BGGSearchResult[] = thingItems.map(item => {
+            const id = item.getAttribute("id") || "";
+            const nameElement = item.querySelector('name[type="primary"]');
+            const name = nameElement?.getAttribute("value") || "";
+            const thumbnailElement = item.querySelector("thumbnail");
+            const thumbnail = thumbnailElement?.textContent || undefined;
+            const yearElement = item.querySelector("yearpublished");
+            const yearPublished = yearElement?.getAttribute("value") || undefined;
+
+            return { id, name, thumbnail, yearPublished };
+          }).filter(result => result.name);
+
+          allResults = [...allResults, ...batchResults];
+        } catch (batchError) {
+          console.warn("BGG batch error:", batchError);
+          // Continue with other batches even if one fails
+        }
+      }
+
+      setAllSearchResults(allResults);
+      setDisplayedResults(allResults.slice(0, RESULTS_PER_PAGE));
+      setHasMoreResults(allResults.length > RESULTS_PER_PAGE);
+      setResultsOffset(0);
     } catch (error) {
       console.error("BGG search error:", error);
-      setSearchResults([]);
+      setAllSearchResults([]);
+      setDisplayedResults([]);
+      setHasMoreResults(false);
     }
     setIsSearching(false);
   }, []);
@@ -125,6 +166,8 @@ export default function GameForm({ game, onSubmit, onClose }: GameFormProps) {
   // Handle search input with debouncing
   const handleSearchInput = (value: string) => {
     setSearchQuery(value);
+    setSelectedGame(null);
+    setShowResults(true);
 
     if (searchTimeout) {
       clearTimeout(searchTimeout);
@@ -135,6 +178,15 @@ export default function GameForm({ game, onSubmit, onClose }: GameFormProps) {
     }, 300);
 
     setSearchTimeout(timeout);
+  };
+
+  // Load more results
+  const loadMoreResults = () => {
+    const newOffset = resultsOffset + RESULTS_PER_PAGE;
+    const newResults = allSearchResults.slice(0, newOffset + RESULTS_PER_PAGE);
+    setDisplayedResults(newResults);
+    setResultsOffset(newOffset);
+    setHasMoreResults(allSearchResults.length > newOffset + RESULTS_PER_PAGE);
   };
 
   // Cleanup timeout on unmount
@@ -153,6 +205,8 @@ export default function GameForm({ game, onSubmit, onClose }: GameFormProps) {
       thumbnail: result.thumbnail || "",
       description: result.yearPublished ? `Published: ${result.yearPublished}` : ""
     });
+    setSelectedGame(result);
+    setShowResults(false);
   };
 
   const validateForm = () => {
@@ -214,7 +268,7 @@ export default function GameForm({ game, onSubmit, onClose }: GameFormProps) {
                             : 'border-transparent text-neutral-500 hover:text-neutral-700'
                     }`}
                 >
-                  Choose Icon
+                  Add Manually
                 </button>
               </div>
             </div>
@@ -239,34 +293,91 @@ export default function GameForm({ game, onSubmit, onClose }: GameFormProps) {
                     />
                   </div>
 
-                  {searchResults.length > 0 && (
-                      <div className="max-h-60 overflow-y-auto border border-neutral-200 rounded-md">
-                        {searchResults.map((result) => (
-                            <button
-                                key={result.id}
-                                type="button"
-                                onClick={() => selectBGGGame(result)}
-                                className="w-full p-3 text-left hover:bg-neutral-50 border-b border-neutral-100 last:border-b-0 flex items-center space-x-3"
-                            >
-                              {result.thumbnail ? (
-                                  <img
-                                      src={result.thumbnail}
-                                      alt={result.name}
-                                      className="w-12 h-12 object-cover rounded"
-                                  />
-                              ) : (
-                                  <div className="w-12 h-12 bg-neutral-200 rounded flex items-center justify-center text-lg">
-                                    🎲
-                                  </div>
-                              )}
-                              <div className="flex-1">
-                                <div className="font-medium text-neutral-900">{result.name}</div>
-                                {result.yearPublished && (
-                                    <div className="text-sm text-neutral-500">Published: {result.yearPublished}</div>
+                  {/* Selected Game Display */}
+                  {selectedGame && (
+                      <div className="p-4 bg-green-50 border-2 border-green-200 rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <div className="relative">
+                            {selectedGame.thumbnail ? (
+                                <img
+                                    src={selectedGame.thumbnail}
+                                    alt={selectedGame.name}
+                                    className="w-12 h-12 object-cover rounded"
+                                />
+                            ) : (
+                                <div className="w-12 h-12 bg-neutral-200 rounded flex items-center justify-center text-lg">
+                                  🎲
+                                </div>
+                            )}
+                            <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                              <IconCheck size={12} className="text-white" />
+                            </div>
+                          </div>
+                          <div className="flex-1">
+                            <div className="font-medium text-green-900">{selectedGame.name}</div>
+                            {selectedGame.yearPublished && (
+                                <div className="text-sm text-green-700">Published: {selectedGame.yearPublished}</div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                  )}
+
+                  {/* Show Results Toggle */}
+                  {selectedGame && displayedResults.length > 0 && (
+                      <button
+                          type="button"
+                          onClick={() => setShowResults(!showResults)}
+                          className="w-full p-2 text-sm text-neutral-600 hover:text-neutral-800 border border-neutral-200 rounded-md hover:bg-neutral-50 transition-colors flex items-center justify-center space-x-2"
+                      >
+                        <span>{showResults ? 'Hide Results' : 'Show Results Again'}</span>
+                        <IconChevronDown size={16} className={`transform transition-transform ${showResults ? 'rotate-180' : ''}`} />
+                      </button>
+                  )}
+
+                  {/* Search Results */}
+                  {showResults && displayedResults.length > 0 && (
+                      <div className="space-y-2">
+                        <div className="max-h-60 overflow-y-auto border border-neutral-200 rounded-md">
+                          {displayedResults.map((result) => (
+                              <button
+                                  key={result.id}
+                                  type="button"
+                                  onClick={() => selectBGGGame(result)}
+                                  className="w-full p-3 text-left hover:bg-neutral-50 border-b border-neutral-100 last:border-b-0 flex items-center space-x-3 transition-colors"
+                              >
+                                {result.thumbnail ? (
+                                    <img
+                                        src={result.thumbnail}
+                                        alt={result.name}
+                                        className="w-12 h-12 object-cover rounded"
+                                    />
+                                ) : (
+                                    <div className="w-12 h-12 bg-neutral-200 rounded flex items-center justify-center text-lg">
+                                      🎲
+                                    </div>
                                 )}
-                              </div>
+                                <div className="flex-1">
+                                  <div className="font-medium text-neutral-900">{result.name}</div>
+                                  {result.yearPublished && (
+                                      <div className="text-sm text-neutral-500">Published: {result.yearPublished}</div>
+                                  )}
+                                </div>
+                              </button>
+                          ))}
+                        </div>
+
+                        {/* Load More Button */}
+                        {hasMoreResults && (
+                            <button
+                                type="button"
+                                onClick={loadMoreResults}
+                                disabled={isSearching}
+                                className="w-full p-2 text-sm text-neutral-600 hover:text-neutral-800 border border-neutral-200 rounded-md hover:bg-neutral-50 transition-colors disabled:opacity-50"
+                            >
+                              Load More Results
                             </button>
-                        ))}
+                        )}
                       </div>
                   )}
                 </div>
@@ -289,29 +400,6 @@ export default function GameForm({ game, onSubmit, onClose }: GameFormProps) {
                         {emoji}
                       </button>
                   ))}
-                </div>
-            )}
-
-            {/* Current Selection Preview */}
-            {(formData.thumbnail || formData.title || formData.avatar !== "🎲") && (
-                <div className="p-3 bg-neutral-50 rounded-lg border border-neutral-200">
-                  <div className="text-sm font-medium text-neutral-700 mb-2">Current Selection:</div>
-                  <div className="flex items-center space-x-3">
-                    {formData.thumbnail ? (
-                        <img
-                            src={formData.thumbnail}
-                            alt={formData.title}
-                            className="w-10 h-10 object-cover rounded"
-                        />
-                    ) : (
-                        <div className="text-2xl">{formData.avatar}</div>
-                    )}
-                    <div className="flex-1">
-                      <div className="font-medium text-neutral-900">
-                        {formData.title || "Untitled Game"}
-                      </div>
-                    </div>
-                  </div>
                 </div>
             )}
 
